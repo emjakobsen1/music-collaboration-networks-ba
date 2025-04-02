@@ -1,11 +1,11 @@
 import requests
 import json
 import os
-
-
+from dotenv import load_dotenv
+load_dotenv()
 # Load Spotify API credentials
-SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "713f9e49ac274dbcbe1fe7ac31e0dfe8")
-SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "994f5bf3a0ef4aeaa9803b113fca8a54")
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
 # Spotify API endpoints
 AUTH_URL = "https://accounts.spotify.com/api/token"
@@ -128,7 +128,7 @@ def process_file(json_file):
 
 def main():
     
-    file_to_process = "../data/mpd.slice.152000-152999.json"  
+    file_to_process = "../data/mpd.slice.153000-153999.json"  
     
     if not os.path.exists(file_to_process):
         print(f"File {file_to_process} not found.")
