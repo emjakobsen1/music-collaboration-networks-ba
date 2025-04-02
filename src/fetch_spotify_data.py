@@ -1,11 +1,11 @@
 import requests
 import json
 import os
-import glob
+
 
 # Load Spotify API credentials
-SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "d2ef9b2185874158a3843af24aa651c4")
-SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "f1984c436ac94925975bcd235fae8acb")
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "713f9e49ac274dbcbe1fe7ac31e0dfe8")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "994f5bf3a0ef4aeaa9803b113fca8a54")
 
 # Spotify API endpoints
 AUTH_URL = "https://accounts.spotify.com/api/token"
@@ -26,15 +26,15 @@ def fetch_track_info(track_ids, token):
     headers = {"Authorization": f"Bearer {token}"}
     track_info_dict = {}
 
-    for i in range(0, len(track_ids), 50):  # Processing in batches of 50
+    for i in range(0, len(track_ids), 50):  
         batch = track_ids[i:i + 50]
         response = requests.get(f"{TRACKS_URL}?ids={','.join(batch)}", headers=headers)
 
-        # Check if the response is empty or not valid JSON
+        
         if response.status_code != 200:
             print(f"Error fetching tracks: {response.status_code}, {response.text}")
             
-            # Check if the 'Retry-After' header exists and print it if it does
+            
             retry_after = response.headers.get("Retry-After")
             if retry_after:
                 print(f"Retry-After header: Retry after {retry_after} seconds.")
@@ -66,13 +66,13 @@ def fetch_track_info(track_ids, token):
 
     return list(track_info_dict.values())
 
-# Function to fetch artist genres
+
 def fetch_artist_genres(track_info, token):
     headers = {"Authorization": f"Bearer {token}"}
     all_artist_ids = {aid["artist_id"] for track in track_info for aid in track["artists"]}
     artist_genre_map = {}
 
-    for i in range(0, len(all_artist_ids), 50):  # Processing in batches of 50
+    for i in range(0, len(all_artist_ids), 50):  
         batch = list(all_artist_ids)[i:i + 50]
         response = requests.get(f"{ARTISTS_URL}?ids={','.join(batch)}", headers=headers)
         if response.status_code != 200:
@@ -97,7 +97,7 @@ def process_file(json_file):
         print(f"Failed to retrieve Spotify token for {json_file}")
         return
 
-    output_file = json_file.replace("data/", "data2/").replace(".json", ".processed.json")
+    output_file = json_file.replace("data/", "data_processed/").replace(".json", ".processed.json")
     
 
     if os.path.exists(output_file):
@@ -119,7 +119,7 @@ def process_file(json_file):
     track_info = fetch_artist_genres(track_info, token)
 
     
-    os.makedirs("data2", exist_ok=True)
+    os.makedirs("data_processed", exist_ok=True)
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(track_info, f, indent=4)
 
@@ -137,7 +137,7 @@ def main():
     print(f"🚀 Processing file: {file_to_process}")
     process_file(file_to_process)
 
-    print("✅ File processed!")
+    print("File processed.")
 
 if __name__ == "__main__":
     main()
