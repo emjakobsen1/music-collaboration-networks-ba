@@ -1,3 +1,4 @@
 *.graphml
 *.json
+*.env
 cytographs/
