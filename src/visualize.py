@@ -17,21 +17,10 @@ def load_data_from_files(data_folder):
                 data.extend(json.load(f))  
     return data
 
-import networkx as nx
-from collections import Counter
+
 
 def build_artist_collab_graph(data, year_range):
-    """
-    Builds a collaboration graph of artists within a specified year interval and calculates the percentage of collaborative songs.
-    
-    Parameters:
-    - data (list of dicts): The dataset containing track information.
-    - year_range (tuple): A tuple (start_year, end_year) defining the year filter.
-    
-    Returns:
-    - G (networkx.Graph): A NetworkX graph with artist collaborations.
-    - collab_percentage (float): The percentage of songs that involved collaborations.
-    """
+
     G = nx.Graph()
     start_year, end_year = year_range  
     
@@ -58,7 +47,7 @@ def build_artist_collab_graph(data, year_range):
 
         classified_genres = [classify_genre(g) for g in raw_genres]
         
-        # Assign a single genre (supergenre) to the song
+        
         if classified_genres:
             genre_counts = Counter(classified_genres)
             main_genre = genre_counts.most_common(1)[0][0]  # Most frequent genre
@@ -69,8 +58,8 @@ def build_artist_collab_graph(data, year_range):
 
         for artist_id, artist_name in artist_nodes.items():
             if artist_id not in G:
-                G.add_node(artist_id, name=artist_name, genre=main_genre)  # Assign genre immediately
-            artist_genres.setdefault(artist_id, []).append(main_genre)  # Store all genres for later checks
+                G.add_node(artist_id, name=artist_name, genre=main_genre) 
+            artist_genres.setdefault(artist_id, []).append(main_genre)  
 
         artist_ids = list(artist_nodes.keys())
         if len(artist_ids) > 1:
@@ -82,7 +71,7 @@ def build_artist_collab_graph(data, year_range):
                     if G.has_edge(artist1, artist2):
                         G[artist1][artist2]["songs"].add(song_name)  
                         G[artist1][artist2]["weight"] += 1  
-                        G[artist1][artist2]["genre"].append(main_genre)  # Append genre for later selection
+                        G[artist1][artist2]["genre"].append(main_genre)  
                     else:
                         G.add_edge(artist1, artist2, songs={song_name}, weight=1, genre=[main_genre])
 
@@ -90,31 +79,30 @@ def build_artist_collab_graph(data, year_range):
     print("Collab percentage:", collab_percentage)
     print("Nodes before removing isolates:", len(G.nodes))
 
-    # Step 1: Assign a single genre to each edge based on the majority genre
+    
     for u, v, data in G.edges(data=True):
         genre_counts = Counter(data["genre"])
-        G[u][v]["genre"] = genre_counts.most_common(1)[0][0]  # Assign most common genre
+        G[u][v]["genre"] = genre_counts.most_common(1)[0][0]  
 
-    # Step 2: Assign a genre to each node based on the majority genre of its edges
+    
     for node in G.nodes():
         edge_genres = [G[node][neighbor]["genre"] for neighbor in G.neighbors(node)]
         if edge_genres:
             genre_counts = Counter(edge_genres)
-            G.nodes[node]["genre"] = genre_counts.most_common(1)[0][0]  # Assign most common genre
+            G.nodes[node]["genre"] = genre_counts.most_common(1)[0][0]  
         else:
-            # If isolated, assign based on the majority genre from songs they were in
+           
             if node in artist_genres:
                 genre_counts = Counter(artist_genres[node])
                 G.nodes[node]["genre"] = genre_counts.most_common(1)[0][0]
             else:
-                G.nodes[node]["genre"] = "other"  # Fallback for truly isolated cases
+                G.nodes[node]["genre"] = "other"  
 
     print_classification_summary()
     return G
 
 
-import json
-import os
+
 
 def build_artist_collab_graph_with_release_date(data, year_range):
     """
@@ -200,18 +188,18 @@ def build_artist_collab_graph_with_release_date(data, year_range):
 
 
 def visualize_full_graph(G):
-    """Visualizes the entire artist collaboration network efficiently."""
+   
     plt.figure(figsize=(12, 10))
 
-    pos = nx.spring_layout(G, seed=42)  # Choose a layout that scales well
+    pos = nx.spring_layout(G, seed=42)  
 
     nx.draw(
         G, pos, 
-        node_size=20,  # Smaller nodes for large graph
+        node_size=20,  
         node_color="blue",
         edge_color="gray", 
-        alpha=0.3,  # Make edges more transparent
-        width=0.5  # Thinner edges for better clarity
+        alpha=0.3,  
+        width=0.5  
     )
 
     plt.title("Full Artist Collaboration Graph")
@@ -219,12 +207,6 @@ def visualize_full_graph(G):
 
 def count_total_songs(data):
     print(f"Total song entries: {len(data)}")
-    # print("Top 20 Songs (ID + Title):")
-    
-    # for entry in data[:20]:  # Get the first 20 songs
-    #     print(f"{entry['track_id']}: {entry['track_name']}")
-    
-    # return len(data)
 
 def count_unique_songs_and_artists(data):
     song_ids = set()
@@ -237,13 +219,12 @@ def count_unique_songs_and_artists(data):
     
     return len(song_ids), len(artist_ids)
 
-from collections import Counter
+
 
 def get_genre_statistics(data):
     genre_counter = Counter()
     unique_genres_set = set()
-    
-    # Count occurrences of each genre in the data
+   
     for entry in data:
         for genre in entry.get("genres", []):
             genre_counter[genre] += 1  
@@ -252,13 +233,7 @@ def get_genre_statistics(data):
     unique_genres = len(genre_counter)
     sorted_genres = genre_counter.most_common()
     
-    # Print the total number of unique genres
     print(f"Total unique genres: {unique_genres}")
-    
-    # Print all genres in a single line, separated by commas
-    # print("Genres:")
-    # print(", ".join([f"{genre}: {count}" for genre, count in sorted_genres]))
-    
     return genre_counter
 
 
@@ -272,7 +247,6 @@ def get_release_year_statistics(data):
     
     sorted_years = year_counter.most_common()
     
-    print("Top 50 most common release years:")
     for year, count in sorted_years[:50]:
         print(f"{year}: {count}")
     
@@ -296,38 +270,31 @@ def graph_songs_to_artists (data):
     print(f"Number of edges: {len(song_graph.edges)}")
     return song_graph
 
-import networkx as nx
+
 
 def export_graphML(G, _filename):
-    """Exports the graph to a Cytoscape-compatible GraphML format."""
+
     
-    # Convert 'set' and 'list' attributes to comma-separated strings
+   
     for u, v, data in G.edges(data=True):
         for key, value in data.items():
-            if isinstance(value, (set, list)):  # Convert set/list to string
+            if isinstance(value, (set, list)):  
                 data[key] = ", ".join(map(str, value))
 
     for node, data in G.nodes(data=True):
         for key, value in data.items():
-            if isinstance(value, (set, list)):  # Convert set/list to string
+            if isinstance(value, (set, list)):  
                 data[key] = ", ".join(map(str, value))
 
-    # Save as GraphML
+
     filename = f"../cytographs/graph{_filename}.graphml"
     nx.write_graphml(G, filename)
     print(f"Graph saved as {filename}")
 
 def export_graph_to_json(G, output_folder="../jsonexport/", filename="artist_collab.json"):
-    """
-    Exports a NetworkX graph to a JSON file.
-    
-    Parameters:
-    - G (networkx.Graph): The graph to export.
-    - output_folder (str): The folder where the JSON file should be saved.
-    - filename (str): The name of the JSON file.
-    """
+   
     if not os.path.exists(output_folder):
-        os.makedirs(output_folder)  # Ensure directory exists
+        os.makedirs(output_folder)  
     
     graph_data = {
         "nodes": [{"id": n, "name": G.nodes[n]["name"], "genre": G.nodes[n]["genre"]} for n in G.nodes()],
@@ -336,7 +303,7 @@ def export_graph_to_json(G, output_folder="../jsonexport/", filename="artist_col
                 "source": u, 
                 "target": v, 
                 "songs": list(d["songs"]),
-                "release_dates": list(d["release_dates"]),  # Include release dates
+                "release_dates": list(d["release_dates"]), 
                 "weight": d["weight"],
                 "genre": d["genre"]
             }
@@ -368,29 +335,21 @@ def frequency_plot (genre_counts):
     plt.tight_layout()
     plt.show()
 
-import networkx as nx
-from collections import defaultdict
 
 def print_supergenre_edge_density_summary(G):
-    """
-    Computes and prints the density of each supergenre based on edge genres.
     
-    Parameters:
-    - G (networkx.Graph): The artist collaboration graph with 'genre' attributes on edges.
-    """
     genre_edges = defaultdict(list)
 
-    # Group edges by genre
+    
     for u, v, data in G.edges(data=True):
-        genre = data.get("genre", "other")  # Default to 'other' if missing
+        genre = data.get("genre", "other")  
         genre_edges[genre].append((u, v))
 
     print("\nSupergenre Edge Density Summary:")
     for genre, edges in genre_edges.items():
-        subgraph = G.edge_subgraph(edges)  # Create an edge-induced subgraph
-        density = nx.density(subgraph)  # Standard density (ignores weights)
+        subgraph = G.edge_subgraph(edges)  
+        density = nx.density(subgraph)  
         
-        # Compute average weight (collaboration intensity)
         total_weight = sum(G[u][v].get("weight", 1) for u, v in edges)
         avg_weight = total_weight / len(edges) if edges else 0
 
@@ -398,7 +357,7 @@ def print_supergenre_edge_density_summary(G):
 
 
 if __name__ == "__main__":
-    data_folder = '../data2'  
+    data_folder = '../data_processed'  
     data = load_data_from_files(data_folder)
     
 

@@ -1,7 +1,11 @@
 import re
 from collections import defaultdict
+import matplotlib.pyplot as plt
+import squarify
+import seaborn as sns
+import numpy as np
 
-# Initialize classification stats
+
 classification_stats = defaultdict(lambda: {"count": 0, "subgenres": defaultdict(int)})
 
 
@@ -173,28 +177,25 @@ super_genres = {
 }
 
 def classify_genre(genre):
-    """Classifies a genre into one of the predefined super genres."""
     genre = genre.lower().strip()
-
-    # Check for an exact match in the predefined super genres
+    
     for super_genre, subgenres in super_genres.items():
         if genre in subgenres:
             classification_stats[super_genre]["count"] += 1
             classification_stats[super_genre]["subgenres"][genre] += 1
             return super_genre
 
-    # If no match is found, categorize as "Other"
+    
     classification_stats["other"]["count"] += 1
     classification_stats["other"]["subgenres"][genre] += 1
     return "other"
 
 def print_classification_summary():
-    """Prints a summary of genre classification statistics."""
     print("\n🎵 Genre Classification Summary 🎵")
     for super_genre, stats in classification_stats.items():
         print(f"\n🔹 {super_genre.upper()} ({stats['count']} total tracks)")
 
-        # Sort subgenres by count (highest first)
+       
         sorted_subgenres = sorted(stats["subgenres"].items(), key=lambda x: x[1], reverse=True)
 
         for subgenre, count in sorted_subgenres:
@@ -202,67 +203,53 @@ def print_classification_summary():
 
     print("\n✅ Classification Complete!\n")
 
-import matplotlib.pyplot as plt
-import squarify
-import seaborn as sns
-import numpy as np
+
 
 def plot_genre_treemap(classification_stats, base_font_size=3, min_count=0):
-    """Plots a treemap of genre classifications with:
-    - Supergenre color coding
-    - Labels that don't exceed boxes
-    - Subgenre font size based on count
-    - Borders around each box
-    - Lower opacity in colors
-    - Count of unique subgenres and supergenres printed in the console
-    - Filter out subgenres with count less than min_count
-    """
 
-    # Extract supergenre sizes
     supergenre_sizes = {sg: sum(stats["subgenres"].values()) for sg, stats in classification_stats.items()}
 
-    # Assign colors to supergenres with transparency (alpha=0.8)
+    
     supergenre_colors = sns.color_palette("tab20", n_colors=len(supergenre_sizes))
     supergenre_color_map = {sg: (r, g, b, 0.8) for i, (sg, (r, g, b)) in enumerate(zip(supergenre_sizes, supergenre_colors))}
 
-    # Prepare subgenre data
+ 
     subgenre_labels = []
     subgenre_sizes = []
     subgenre_colors = []
     subgenre_counts = []
 
-    # Prepare data for each supergenre's count of subgenres
     supergenre_count_map = {sg: 0 for sg in supergenre_sizes}
-    supergenre_subgenre_count_map = {sg: 0 for sg in supergenre_sizes}  # To hold the total count for each supergenre
+    supergenre_subgenre_count_map = {sg: 0 for sg in supergenre_sizes} 
 
-    # Loop through supergenres and subgenres, but only include those with a count >= min_count
+    
     for supergenre, stats in classification_stats.items():
         for subgenre, count in stats["subgenres"].items():
             if count >= min_count:
                 subgenre_labels.append(subgenre)
-                subgenre_sizes.append(count)  # Use actual count as weight
+                subgenre_sizes.append(count)  
                 subgenre_colors.append(supergenre_color_map[supergenre])
                 subgenre_counts.append(count)
-                supergenre_count_map[supergenre] += 1  # Increment the count for the subgenre
-                supergenre_subgenre_count_map[supergenre] += count  # Sum of counts for each supergenre
+                supergenre_count_map[supergenre] += 1  
+                supergenre_subgenre_count_map[supergenre] += count  
 
-    # If there are no subgenres after filtering, show a message and return
+
     if not subgenre_counts:
         print("No subgenres meet the minimum count threshold.")
         return
 
-    # Normalize font sizes based on count (to emphasize larger subgenres)
+    
     min_size, max_size = min(subgenre_counts), max(subgenre_counts)
     font_sizes = np.interp(subgenre_counts, [min_size, max_size], [base_font_size, base_font_size * 1.8])
 
-    # Create figure
+  
     fig, ax = plt.subplots(figsize=(12, 18))
 
-    # Compute treemap positions
+   
     rects = squarify.normalize_sizes(subgenre_sizes, 100, 100)
     rects = squarify.squarify(rects, 0, 0, 100, 100)
 
-    # Draw rectangles manually
+
     for rect, label, color, fontsize in zip(rects, subgenre_labels, subgenre_colors, font_sizes):
         x, y, dx, dy = rect["x"], rect["y"], rect["dx"], rect["dy"]
         ax.add_patch(plt.Rectangle((x, y), dx, dy, facecolor=color, edgecolor="black", linewidth=0.5))
@@ -274,23 +261,22 @@ def plot_genre_treemap(classification_stats, base_font_size=3, min_count=0):
     ax.set_ylim(0, 100)
     ax.set_title("Supergenre Map", fontsize=14, fontweight="bold")
 
-    # Count unique subgenres
+    
     num_genres = len(subgenre_labels)
 
-    # Display total unique subgenres count at the bottom (left-aligned)
+
     ax.text(
-        0.05, -0.05,  # Position (left-aligned and below the treemap)
+        0.05, -0.05,  
         f"Total Unique Subgenres: {num_genres}",
         ha='left', va='top', transform=ax.transAxes,
         fontsize=8, fontweight='normal'
     )
 
-    # Print supergenre subgenre counts
+   
     print("\nSupergenre Subgenre Counts:")
     for supergenre, count in supergenre_subgenre_count_map.items():
         print(f"{supergenre}: {count} total count")
 
-    # Create legend with color-coded supergenres
     handles = [plt.Rectangle((0, 0), 1, 1, color=supergenre_color_map[sg]) for sg in supergenre_sizes]
     plt.legend(handles, supergenre_sizes.keys(), title="Supergenres", loc="upper left", fontsize=8)
     
