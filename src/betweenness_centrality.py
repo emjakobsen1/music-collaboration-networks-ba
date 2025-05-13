@@ -67,10 +67,10 @@ def compute_top_betweenness_summary(G, year, top_n=10):
     print("Calculating betweenness centrality on giant component...")
     #gc_bc = nx.betweenness_centrality(Gcc, weight='weight', k=None, seed=61)
 
-    # Get top N from full graph
+    
     top_nodes = sorted(full_bc.items(), key=lambda x: x[1], reverse=True)[:top_n]
 
-    # Compute averages
+    
     avg_full = sum(full_bc.values()) / len(full_bc)
     #avg_gc = sum(gc_bc.values()) / len(gc_bc)
 

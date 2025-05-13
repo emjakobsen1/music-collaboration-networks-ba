@@ -377,14 +377,14 @@ def compute_genre_entropy(G, min_degree=0):
         else:
             P_j = {}
 
-        # Compute entropy
+        
         entropy = -sum(p * math.log(p) for p in P_j.values() if p > 0)
 
-        # Save results
+        
         node_entropy_data[node]["P"] = P_j
         node_entropy_data[node]["entropy"] = entropy
 
-    # Extract only valid entropy values
+    
     entropy_values = [data["entropy"] for data in node_entropy_data.values() if "entropy" in data]
 
 
@@ -395,7 +395,7 @@ def inspect_artists_by_genre(G, genre_filter):
     Prints detailed info for nodes matching a genre, including name, genres,
     collaborators, and size of their connected component.
     """
-    print(f"\n🔎 Inspecting artists with genre '{genre_filter}':\n")
+    print(f"\n Inspecting artists with genre '{genre_filter}':\n")
 
     # Build component size lookup
     component_sizes = {}
@@ -414,18 +414,18 @@ def inspect_artists_by_genre(G, genre_filter):
             collab_names = [G.nodes[n].get('name', '<unknown>') for n in neighbors]
             comp_size = component_sizes.get(node, 1)
 
-            print(f"🎤 Artist: {name}")
-            print(f"📀 Main Genre: {main_genre}")
-            print(f"🎧 All Genres: {', '.join(raw_genres) if raw_genres else 'N/A'}")
-            print(f"🤝 Collaborators ({len(collab_names)}): {', '.join(collab_names) if collab_names else 'None'}")
-            print(f"🌐 Component Size: {comp_size}\n")
+            print(f"Artist: {name}")
+            print(f"Main Genre: {main_genre}")
+            print(f"All Genres: {', '.join(raw_genres) if raw_genres else 'N/A'}")
+            print(f"Collaborators ({len(collab_names)}): {', '.join(collab_names) if collab_names else 'None'}")
+            print(f"Component Size: {comp_size}\n")
 
             match_count += 1
 
     if match_count == 0:
-        print("❌ No artists matched.")
+        print("No artists matched.")
     else:
-        print(f"✅ Found {match_count} artist(s) with genre '{genre_filter}'.")
+        print(f"Found {match_count} artist(s) with genre '{genre_filter}'.")
 
 def print_nodes_in_entropy_range(G, node_entropy_data, min_entropy, max_entropy, max_examples=5):
     print(f"\n🔍 Nodes with entropy between {min_entropy:.3f} and {max_entropy:.3f}:\n")
