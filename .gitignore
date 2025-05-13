@@ -1,4 +1,5 @@
 *.graphml
 *.json
 *.env
+*.csv
 cytographs/

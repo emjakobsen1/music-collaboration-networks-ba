@@ -40,8 +40,8 @@ def clean_dataset(input_folder, output_folder):
     print(f"Duplicate entries removed: {removed_duplicates}")
 
 # Paths
-input_folder = "../data2"
-output_folder = "../data2"
+input_folder = "../data_processed"
+output_folder = "../data_processed"
 
 # Run cleaning process
 clean_dataset(input_folder, output_folder)
